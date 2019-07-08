@@ -13,17 +13,28 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.Window;
+import android.widget.ImageView;
 import android.view.WindowManager;
 import android.widget.Toast;
-import java.util.Timer;
-import java.util.TimerTask;
-import android.os.Handler;
+import android.content.Context;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Timer;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static android.hardware.Camera.CameraInfo.CAMERA_FACING_BACK;
 import static android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT;
@@ -38,6 +49,9 @@ public class CustomCameraActivity extends AppCompatActivity {
     private MediaRecorder mMediaRecorder;
     private File image_file;
     private File video_file;
+    private static final int PICK_VIDEO = 2;
+    public Uri mSelectedImage;
+    private Uri mSelectedVideo;
 
     private int CAMERA_TYPE = CAMERA_FACING_BACK;
 
@@ -95,19 +109,13 @@ public class CustomCameraActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.button10).setOnClickListener(v -> {
-            //todo 拍一张照片
             if (isRecording) {
-                //todo 停止录制
-                isRecording = false;
-                releaseMediaRecorder();
-                mCamera.lock();
-                sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(video_file)));
-
             } else {
                 //todo 录制
                 isRecording = true;
                 Log.e("XJP", "onCreate: STEP1" );
                 prepareVideoRecorder();
+                mMediaRecorder.setMaxDuration(10000);
                 Log.e("XJP", "onCreate: STEP2" );
                 startPreview(mSurfaceView.getHolder());
                 try {
@@ -129,6 +137,7 @@ public class CustomCameraActivity extends AppCompatActivity {
                 releaseMediaRecorder();
                 mCamera.lock();
                 sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(video_file)));
+                chooseVideo();
 
             } else {
                 //todo 录制
@@ -330,6 +339,32 @@ public class CustomCameraActivity extends AppCompatActivity {
             }
         }
         return optimalSize;
+    }
+
+    public void chooseVideo() {
+        // TODO-C2 (5) Start Activity to select a video
+        Intent intent = new Intent();
+        intent.setType("video/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Video"),
+                PICK_VIDEO);
+        //Log.e(TAG, "chooseVideo");
+
+    }
+
+    public static void loadCover(ImageView imageView, String url, Context context) {
+
+        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        Glide.with(context)
+                .setDefaultRequestOptions(
+                        new RequestOptions()
+                                .frame(1000000)
+                                .centerCrop()
+                                .error(R.mipmap.ic_launcher)//可以忽略
+                                .placeholder(R.mipmap.ic_launcher)//可以忽略
+                )
+                .load(url)
+                .into(imageView);
     }
 
 

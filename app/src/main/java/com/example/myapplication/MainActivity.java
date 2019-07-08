@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     //申请权限
-    @Override
+ /*   @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case 1: {
@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
             }
             break;
         }
-    }
+    }*/
 
     private MultipartBody.Part getMultipartFromUri(String name, Uri uri) {
         // if NullPointerException thrown, try to allow storage permission in system settings
@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
             if (requestCode == PICK_IMAGE) {
                 mSelectedImage = data.getData();
                 //Log.d(TAG, "selectedImage = " + mSelectedImage);
-               mBtn.setText(R.string.post_it);
+                mBtn.setText(R.string.select_a_video);
             } else if (requestCode == PICK_VIDEO) {
                 mSelectedVideo = data.getData();
                mBtn.setText(R.string.post_it);
@@ -232,11 +232,21 @@ public class MainActivity extends AppCompatActivity {
     private void initBtns() {
         mBtn = findViewById(R.id.Layout_0_2);
         //Log.e(TAG, "postVideo: " + ContextCompat.checkSelfPermission(Solution2C2Activity.this, READ_EXTERNAL_STORAGE));
-        if (ContextCompat.checkSelfPermission(MainActivity.this, READ_EXTERNAL_STORAGE) == -1) {
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-        }
         //Log.e(TAG, "postVideo: " + ContextCompat.checkSelfPermission(Solution2C2Activity.this, READ_EXTERNAL_STORAGE));
+        if (ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                        != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO},
+                    1);
+        } else {
+            Toast.makeText(this, "already granted", Toast.LENGTH_SHORT).show();
+            //startActivity(new Intent(MainActivity.this, CustomCameraActivity.class));
+        }
 
         mBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -248,9 +258,10 @@ public class MainActivity extends AppCompatActivity {
                         postVideo();
                     }
                 }
-                else{
-                    chooseVideo();
+                else if ("上传".equals(s)) {
                     chooseImage();
+                }else if (getString(R.string.select_a_video).equals(s)) {
+                    chooseVideo();
                 }
             }
         });
