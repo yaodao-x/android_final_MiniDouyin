@@ -1,18 +1,127 @@
-<?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
-</android.support.constraint.ConstraintLayout>
+    <LinearLayout
+        android:id="@+id/main_body1"
+        android:orientation="vertical"
+        android:background="@android:color/white"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/linearLayout2">
+        <RelativeLayout
+            android:id="@+id/main_body"
+            android:background="@android:color/white"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </RelativeLayout>
+    </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/linearLayout2"
+        android:layout_below="@+id/linearLayout1"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp"
+        android:orientation="vertical" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="50.0dip"
+        android:background="#FFFFFF"
+        android:layout_alignParentBottom="true"
+        >
+        <!--layout_weight这个属性为权重，让两个textview平分这个linearLayout-->
+
+        <TextView
+            android:id="@+id/Layout_3_1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:text="首页"
+            android:textColor="#000000"
+            android:textSize="20dip"
+            android:background="@drawable/selector"/>
+
+        <TextView
+            android:id="@+id/Layout_3_2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:text="关注"
+            android:textColor="#000000"
+            android:textSize="20dip"
+            android:background="@drawable/selector"/>
+
+        <Button
+            android:id="@+id/Layout_3_5"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:text="+"
+            android:textColor="#000000"
+            android:textSize="20dip"
+            android:background="@drawable/selector"/>
+
+        <TextView
+            android:id="@+id/Layout_3_3"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:text="消息"
+            android:textColor="#000000"
+            android:textSize="20dip"
+            android:background="@drawable/selector"/>
+
+        <TextView
+            android:id="@+id/Layout_3_4"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:text="我"
+            android:textColor="#000000"
+            android:textSize="20dip"
+            android:background="@drawable/selector"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="50.0dip"
+        android:background="#FFFFFF"
+        android:layout_alignParentBottom="false"
+        >
+        <!--layout_weight这个属性为权重，让两个textview平分这个linearLayout-->
+
+        <Button
+            android:id="@+id/Layout_0_1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:textSize="20dip"
+            android:background="@drawable/selector"/>
+
+        <Button
+            android:id="@+id/Layout_0_2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1.0"
+            android:background="@drawable/selector"
+            android:gravity="center"
+            android:text="上传"
+            android:textColor="#000000"
+            android:textSize="20dip" />
+    </LinearLayout>
+
+</RelativeLayout>

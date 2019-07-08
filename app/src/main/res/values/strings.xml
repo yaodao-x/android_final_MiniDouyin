@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">My Application</string>
+    <string name="title_activity_custom_camera">CustomCameraActivity</string>
+    <string name="post_it">post it!</string>
 </resources>
