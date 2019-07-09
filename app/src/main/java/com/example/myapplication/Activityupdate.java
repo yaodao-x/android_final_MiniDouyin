@@ -15,6 +15,9 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -25,30 +28,36 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import android.graphics.Bitmap;
+
+import static com.example.myapplication.Utils.SYSTEM_TYPE_IMAGE;
+import static com.example.myapplication.Utils.getOutputMediaFile;
+
 public class Activityupdate extends AppCompatActivity {
 
     private Uri videoUri;
     public Button mBtn;
     private ImageView mview;
-    private static final String TAG  = Activityupdate.class.getSimpleName();
+    private Uri mSelectedImage;
+    private static final String TAG = Activityupdate.class.getSimpleName();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_activityupdate);
-        Log.e(TAG, "onCreate: Activityupdate" );
+        Log.e(TAG, "onCreate: Activityupdate");
         Intent intent = getIntent();
         videoUri = Uri.parse(intent.getStringExtra("videoUri"));
         mview = findViewById(R.id.imageView3);
-        loadCover(mview,intent.getStringExtra("videoUri"),this);
+        loadCover(mview, intent.getStringExtra("videoUri"), this);
         mBtn = findViewById(R.id.button);
         mBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               postVideo();
+                postVideo();
             }
         });
     }
-
 
 
     public static void loadCover(ImageView imageView, String url, Context context) {
@@ -70,10 +79,16 @@ public class Activityupdate extends AppCompatActivity {
         //mBtn.setEnabled(false);
         mBtn.setText("POSTING...");
         mBtn.setEnabled(false);
-        mview.;
+
+        mview.setDrawingCacheEnabled(true);
+        Bitmap bitmap = Bitmap.createBitmap(mview.getDrawingCache());
+        mview.setDrawingCacheEnabled(false);
+
+        saveBitmap(bitmap);
+
 
         MultipartBody.Part coverImage = getMultipartFromUri("cover_image", mSelectedImage);
-        MultipartBody.Part video = getMultipartFromUri("video",videoUri);
+        MultipartBody.Part video = getMultipartFromUri("video", videoUri);
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://test.androidcamp.bytedance.com/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -116,4 +131,30 @@ public class Activityupdate extends AppCompatActivity {
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), f);
         return MultipartBody.Part.createFormData(name, f.getName(), requestFile);
     }
+
+    /**
+     * 保存方法
+     */
+    public void saveBitmap(Bitmap bm) {
+        Log.e(TAG, "保存图片");
+        File f = getOutputMediaFile(SYSTEM_TYPE_IMAGE);
+        if (f.exists()) {
+            f.delete();
+        }
+        try {
+            FileOutputStream out = new FileOutputStream(f);
+            bm.compress(Bitmap.CompressFormat.PNG, 90, out);
+            out.flush();
+            out.close();
+            Log.i(TAG, "已经保存");
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        mSelectedImage = Uri.fromFile(f);
+    }
+
 }

@@ -135,6 +135,7 @@ public class CustomCameraActivity extends AppCompatActivity {
             if (isRecording) {
                 //todo 停止录制
                 isRecording = false;
+                releaseMediaRecorder();
 
                 Intent intent = new Intent(this,Activityupdate.class);
                 intent.putExtra("videoUri", Uri.fromFile(video_file).toString());
@@ -142,7 +143,7 @@ public class CustomCameraActivity extends AppCompatActivity {
                 this.finish();
                 startActivity(intent);
                 //Log.e(TAG, "onCreate:停止录制 2" );
-                releaseMediaRecorder();
+                //releaseMediaRecorder();
                 mCamera.lock();
                 sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(video_file)));
 
