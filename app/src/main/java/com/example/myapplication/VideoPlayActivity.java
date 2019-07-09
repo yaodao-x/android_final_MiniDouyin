@@ -1,12 +1,18 @@
 package com.example.myapplication;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -28,9 +34,8 @@ public class VideoPlayActivity extends AppCompatActivity implements
         MediaPlayer.OnInfoListener, View.OnClickListener,
         MediaPlayer.OnSeekCompleteListener,
         MediaPlayer.OnVideoSizeChangedListener,
-        SeekBar.OnSeekBarChangeListener {
-
-    private static final String TAG = VideoPlayActivity.class.getSimpleName();
+        SeekBar.OnSeekBarChangeListener,
+        GestureDetector.OnGestureListener {
 
     private ImageView playOrPauseIv;
     private SurfaceView videoSuf;
@@ -40,11 +45,11 @@ public class VideoPlayActivity extends AppCompatActivity implements
     private RelativeLayout rootViewRl;
     private LinearLayout controlLl;
     private TextView startTime, endTime;
-    private ImageView forwardButton, backwardButton;
-    private boolean isShow = false;
+    private ImageView forwardButton, backwardButton, loveImage;
+    private GestureDetector gestureScanner;
+    private ObjectAnimator animator;
 
     public static final int UPDATE_TIME = 0x0001;
-    public static final int HIDE_CONTROL = 0x0002;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -53,9 +58,6 @@ public class VideoPlayActivity extends AppCompatActivity implements
                 case UPDATE_TIME:
                     updateTime();
                     mHandler.sendEmptyMessageDelayed(UPDATE_TIME, 500);
-                    break;
-                case HIDE_CONTROL:
-                    hideControl();
                     break;
             }
         }
@@ -69,13 +71,48 @@ public class VideoPlayActivity extends AppCompatActivity implements
         initSurfaceView();
         initPlayer();
         initEvent();
+        gestureScanner = new GestureDetector(this);
+        gestureScanner.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
+            public boolean onDoubleTap(MotionEvent e) {
+                //双击
+                Log.e("test", "onDoubleTap");
+
+                animator = ObjectAnimator.ofFloat(loveImage, "alpha", 0, 1f);
+                animator.setDuration(2500);
+                animator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        super.onAnimationStart(animation);
+                        loveImage.setVisibility(View.VISIBLE);
+                    }
+
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        loveImage.setVisibility(View.GONE);
+                        loveImage.setVisibility(View.INVISIBLE);
+                    }
+                });
+                animator.start();
+
+
+                return false;
+            }
+
+            public boolean onDoubleTapEvent(MotionEvent e) {
+                return false;
+            }
+
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                //单击
+                play();
+                return false;
+            }
+        });
         Log.e("XJP", "onCreate: ");
     }
 
 
     private void initEvent() {
-        playOrPauseIv.setOnClickListener(this);
-        rootViewRl.setOnClickListener(this);
         forwardButton.setOnClickListener(this);
         backwardButton.setOnClickListener(this);
         mSeekBar.setOnSeekBarChangeListener(this);
@@ -97,8 +134,8 @@ public class VideoPlayActivity extends AppCompatActivity implements
         mPlayer.setOnVideoSizeChangedListener(this);
         try {
             String video_url = getIntent().getStringExtra("video_url");
-            Toast.makeText(VideoPlayActivity.this, video_url, Toast.LENGTH_SHORT).show();
-            Log.e(TAG, "initPlayer: " + video_url);
+//            Toast.makeText(VideoPlayActivity.this, video_url, Toast.LENGTH_SHORT).show();
+//            Log.e(TAG, "initPlayer: " + video_url);
             mPlayer.setDataSource(VideoPlayActivity.this, Uri.parse(video_url));
 //            mPlayer.setDataSource(getResources().openRawResourceFd(R.raw.socer));
             surfaceHolder = videoSuf.getHolder();
@@ -134,12 +171,15 @@ public class VideoPlayActivity extends AppCompatActivity implements
         controlLl = (LinearLayout) findViewById(R.id.control_ll);
         forwardButton = (ImageView) findViewById(R.id.tv_forward);
         backwardButton = (ImageView) findViewById(R.id.tv_backward);
+        loveImage = (ImageView) findViewById(R.id.imageView2);
+        Log.e("XJP", "initViews: " + R.id.imageView2);
+        loveImage.setVisibility(View.INVISIBLE);
     }
 
     @Override
     public void onPrepared(MediaPlayer mp) {
-        SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm:ss");
-        SimpleDateFormat lastTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat currentTime = new SimpleDateFormat("mm:ss");
+        SimpleDateFormat lastTime = new SimpleDateFormat("mm:ss");
 
         startTime.setText(currentTime.format(mp.getCurrentPosition()));
         endTime.setText(lastTime.format(mp.getDuration()));
@@ -170,13 +210,11 @@ public class VideoPlayActivity extends AppCompatActivity implements
         if (mPlayer.isPlaying()) {
             mPlayer.pause();
             mHandler.removeMessages(UPDATE_TIME);
-            mHandler.removeMessages(HIDE_CONTROL);
             playOrPauseIv.setVisibility(View.VISIBLE);
             playOrPauseIv.setImageResource(android.R.drawable.ic_media_play);
         } else {
             mPlayer.start();
             mHandler.sendEmptyMessageDelayed(UPDATE_TIME, 500);
-            mHandler.sendEmptyMessageDelayed(HIDE_CONTROL, 5000);
             playOrPauseIv.setVisibility(View.INVISIBLE);
             playOrPauseIv.setImageResource(android.R.drawable.ic_media_pause);
         }
@@ -201,41 +239,17 @@ public class VideoPlayActivity extends AppCompatActivity implements
             case R.id.tv_forward:
                 forWard();
                 break;
-            case R.id.playOrPause:
-                play();
-                break;
-            case R.id.root_rl:
-                showControl();
-                break;
         }
     }
 
 
     //更新播放时间
     private void updateTime() {
-        SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat currentTime = new SimpleDateFormat("mm:ss");
         startTime.setText(currentTime.format(mPlayer.getCurrentPosition()));
         mSeekBar.setProgress(mPlayer.getCurrentPosition());
     }
 
-    //隐藏进度条
-    private void hideControl() {
-        isShow = false;
-        mHandler.removeMessages(UPDATE_TIME);
-        controlLl.animate().setDuration(300).translationY(controlLl.getHeight());
-    }
-
-    //显示进度条
-    private void showControl() {
-        if (isShow) {
-            play();
-        }
-        isShow = true;
-        mHandler.removeMessages(HIDE_CONTROL);
-        mHandler.sendEmptyMessage(UPDATE_TIME);
-        mHandler.sendEmptyMessageDelayed(HIDE_CONTROL, 5000);
-        controlLl.animate().setDuration(300).translationY(0);
-    }
 
     //设置快进10秒方法
     private void forWard() {
@@ -298,6 +312,33 @@ public class VideoPlayActivity extends AppCompatActivity implements
         mHandler.removeMessages(UPDATE_TIME);
         mPlayer.release();
         Log.e("XJP", "onDestroy: ");
+    }
+
+    public boolean onTouchEvent(MotionEvent me) {
+        return gestureScanner.onTouchEvent(me);
+    }
+
+    public boolean onDown(MotionEvent e) {
+        return true;
+    }
+
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        return true;
+    }
+
+    public void onLongPress(MotionEvent e) {
+    }
+
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        return true;
+    }
+
+    public void onShowPress(MotionEvent e) {
+    }
+
+    public boolean onSingleTapUp(MotionEvent e) {
+        Log.e("test", "onSingleTapUp");
+        return true;
     }
 
 }
