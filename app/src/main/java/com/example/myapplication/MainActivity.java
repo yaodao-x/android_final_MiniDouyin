@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     public Uri mSelectedImage;
     private Uri mSelectedVideo;
     public Button mBtn;
-
+    public Button mBtn2;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -265,6 +265,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        mBtn2 = findViewById(R.id.Layout_0_1);
+        mBtn2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // postVideo();
+                fetchFeed(v);
+            }
+        });
+
     }
 
     private void closeAndroidPDialog(){
@@ -288,5 +297,53 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void resetRefreshBtn() {
+        mBtn2.setText("刷新");
+        mBtn2.setEnabled(true);
+    }
+
+    public void fetchFeed(View view) {
+        mBtn2.setText("requesting...");
+        mBtn2.setEnabled(false);
+
+        // TODO-C2 (9) Send Request to fetch feed
+        // if success, assign data to mFeeds and call mRv.getAdapter().notifyDataSetChanged()
+        // don't forget to call resetRefreshBtn() after response received
+
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://test.androidcamp.bytedance.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        retrofit.create(IMiniDouyinService.class).FeedResponse().enqueue(new Callback<FeedResponse>() {
+            @Override
+            public void onResponse(Call<FeedResponse> call, Response<FeedResponse> response) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this, "fetchfeed success", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                mFeeds = response.body().getFeeds();
+                resetRefreshBtn();
+                try {
+                    mRv.getAdapter().notifyDataSetChanged();
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FeedResponse> call, Throwable t) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this, "fetchfeed fail", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                resetRefreshBtn();
+            }
+        });
+    }
 
 }

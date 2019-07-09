@@ -44,6 +44,7 @@ import static com.example.myapplication.Utils.getOutputMediaFile;
 
 public class CustomCameraActivity extends AppCompatActivity {
 
+    private static final String TAG = CustomCameraActivity.class.getSimpleName();
     private SurfaceView mSurfaceView;
     private Camera mCamera;
     private MediaRecorder mMediaRecorder;
@@ -134,10 +135,16 @@ public class CustomCameraActivity extends AppCompatActivity {
             if (isRecording) {
                 //todo 停止录制
                 isRecording = false;
+
+                Intent intent = new Intent(this,Activityupdate.class);
+                intent.putExtra("videoUri", Uri.fromFile(video_file).toString());
+                Log.e(TAG, "onCreate:停止录制 1" );
+                this.finish();
+                startActivity(intent);
+                //Log.e(TAG, "onCreate:停止录制 2" );
                 releaseMediaRecorder();
                 mCamera.lock();
                 sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(video_file)));
-                chooseVideo();
 
             } else {
                 //todo 录制
@@ -341,16 +348,7 @@ public class CustomCameraActivity extends AppCompatActivity {
         return optimalSize;
     }
 
-    public void chooseVideo() {
-        // TODO-C2 (5) Start Activity to select a video
-        Intent intent = new Intent();
-        intent.setType("video/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Video"),
-                PICK_VIDEO);
-        //Log.e(TAG, "chooseVideo");
 
-    }
 
     public static void loadCover(ImageView imageView, String url, Context context) {
 
